@@ -142,29 +142,7 @@ Sources (5 found):
 [Source 1] Page 1: The next monthly payment for the house rental...
 ```
 
-## 📁 Project Structure
 
-```
-LeaseLooker/
-├── app_simple.py          # Main Streamlit app (recommended)
-├── app.py                 # Advanced UI version
-├── lease_rag.py          # Core hybrid RAG system
-├── config.py             # Configuration settings
-├── requirements.txt      # Python dependencies
-├── Dockerfile            # Docker container
-├── docker-compose.yml    # Docker setup
-│
-├── tests/
-│   ├── test_rag.py       # Automated tests
-│   ├── debug_query.py    # Debug utility
-│   └── test_components.py # Component tests
-│
-└── docs/
-    ├── QUICKSTART.md
-    ├── TROUBLESHOOTING.md
-    ├── DEPLOYMENT.md
-    └── DEPLOY_STREAMLIT_CLOUD.md
-```
 
 ## 🔧 Configuration
 
