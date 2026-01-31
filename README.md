@@ -1,173 +1,19 @@
-# LeaseLooker - Hybrid RAG Lease Analyzer
+# LeaseLooker 🏠
 
-A powerful Streamlit web application that uses Hybrid RAG (Retrieval-Augmented Generation) to analyze lease agreements. Combines semantic search (FAISS) and keyword search (BM25) for accurate, contextual answers about your lease.
+AI-Powered Lease Agreement Analyzer using Hybrid RAG (Retrieval-Augmented Generation)
 
-## 🚀 Features
+## 🎯 What It Does
 
-- **Hybrid RAG System**: Combines FAISS (semantic) + BM25 (keyword) retrieval
-- **Interactive Chat Interface**: Ask questions in natural language
-- **Source Citations**: Every answer includes page references
-- **Conversation History**: Maintains context across questions
-- **Drag & Drop Upload**: Easy PDF upload interface
-- **Real-time Processing**: See progress as your lease is analyzed
+Upload your lease PDF, ask questions in plain English, get instant answers with page citations. No more scrolling through pages to find what you need!
+
+**Example Questions:**
+- "How much is the rent?"
+- "Can I have pets?"
+- "What are the late fees?"
+- "How do I terminate the lease?"
 
 ## 🏗️ Architecture
 
-```
-User Question
-     ↓
-Hybrid Retriever (30% BM25 + 70% FAISS)
-     ↓
-Top 3 Relevant Chunks
-     ↓
-GPT-3.5-Turbo (with context)
-     ↓
-Answer + Page Citations
-```
-
-## 📋 Prerequisites
-
-- Python 3.8+
-- OpenAI API Key ([Get one here](https://platform.openai.com/api-keys))
-
-## 🛠️ Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/ashwin-aggarwal/LeaseLooker.git
-cd LeaseLooker
-```
-
-2. **Create virtual environment** (recommended)
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-## 🎯 Usage
-
-### Streamlit App (Recommended)
-
-1. **Start the app**
-```bash
-streamlit run app.py
-```
-
-2. **Open in browser**
-   - The app will automatically open at `http://localhost:8501`
-
-3. **Use the app**
-   - Enter your OpenAI API key in the sidebar
-   - Upload a lease PDF
-   - Click "Process Lease"
-   - Ask questions about your lease!
-
-### Command Line Interface
-
-You can also use the RAG system directly from the command line:
-
-```bash
-# Basic query
-python lease_rag.py path/to/lease.pdf "How much is the rent?"
-
-# Without a specific question (defaults to "How much is the rent?")
-python lease_rag.py path/to/lease.pdf
-```
-
-## 💡 Example Questions
-
-- "How much is the rent?"
-- "What is the security deposit?"
-- "Can I have pets?"
-- "What are the late fee charges?"
-- "How much notice is required to terminate?"
-- "Who is responsible for repairs?"
-- "Is subletting allowed?"
-- "What utilities are included?"
-
-## 🧪 How It Works
-
-### 1. Document Processing
-```python
-# Load PDF and split into chunks
-loader = PyPDFLoader(pdf_path)
-pages = loader.load()
-
-# Chunk with overlap for context
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=250,
-    chunk_overlap=50
-)
-chunks = text_splitter.split_documents(pages)
-```
-
-### 2. Hybrid Retrieval Setup
-```python
-# Semantic search with FAISS
-vectorstore = FAISS.from_documents(chunks, OpenAIEmbeddings())
-faiss_retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
-
-# Keyword search with BM25
-bm25_retriever = BM25Retriever.from_documents(chunks)
-bm25_retriever.k = 3
-
-# Combine: 30% BM25, 70% FAISS
-hybrid_retriever = EnsembleRetriever(
-    retrievers=[bm25_retriever, faiss_retriever],
-    weights=[0.3, 0.7]
-)
-```
-
-### 3. Question Answering
-```python
-# Create chain with context-aware prompt
-prompt = ChatPromptTemplate.from_template(template)
-llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
-
-# Retrieve and generate
-retriever_chain = create_retrieval_chain(hybrid_retriever, document_chain)
-response = retriever_chain.invoke({"input": question})
-```
-
-## 📊 Technical Details
-
-- **Chunk Size**: 250 characters (optimized for lease clauses)
-- **Chunk Overlap**: 50 characters (maintains context)
-- **Retrieval**: Top 3 chunks from each method
-- **Model**: GPT-3.5-Turbo (fast, cost-effective)
-- **Embedding**: OpenAI text-embedding-ada-002
-
-## 🎨 Customization
-
-### Adjust Retrieval Weights
-In `lease_rag.py`, modify the weights:
-```python
-hybrid_retriever = EnsembleRetriever(
-    retrievers=[bm25_retriever, faiss_retriever],
-    weights=[0.3, 0.7]  # Adjust these values
-)
-```
-
-### Change Chunk Size
-```python
-rag = LeaseRAG(
-    pdf_path, 
-    chunk_size=500,      # Larger chunks
-    chunk_overlap=100    # More overlap
-)
-```
-
-### Use Different Model
-```python
-llm = ChatOpenAI(
-    model_name="gpt-4",  # More powerful
-    temperature=0
-)
 ```
 ┌─────────────────┐
 │   User Upload   │
@@ -203,73 +49,207 @@ llm = ChatOpenAI(
 ┌─────────────────┐
 │ Answer + Pages  │
 └─────────────────┘
+```
 
-## 🔒 Privacy & Security
+### How Hybrid RAG Works
 
-- **API Key**: Never committed to code, entered via UI
-- **Local Processing**: PDF processing happens locally
-- **No Data Storage**: Files are temporary and deleted after processing
-- **OpenAI API**: Only text chunks sent, not full PDF
+**FAISS (70%)** - Semantic search that understands meaning
+- "monthly payment" → finds rent information
+- Uses AI embeddings to understand context
+
+**BM25 (30%)** - Keyword search for exact matches  
+- "deposit" → finds all deposit mentions
+- Traditional but precise
+
+**Combined** - Best of both worlds!
+- Get accurate answers even with different wording
+- Never miss important exact terms
+
+## 🚀 Quick Start
+
+### Option 1: Run Locally
+
+```bash
+# Clone the repo
+git clone https://github.com/ashwin-aggarwal/LeaseLooker.git
+cd LeaseLooker
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the app
+streamlit run app_simple.py
+```
+
+Open http://localhost:8501 and start analyzing!
+
+### Option 2: Deploy to Cloud (FREE!)
+
+[![Deploy to Streamlit Cloud](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io)
+
+1. Fork this repo
+2. Go to [share.streamlit.io](https://share.streamlit.io)
+3. Click "New app" → Select your repo
+4. Set main file to `app_simple.py`
+5. Deploy!
+
+See [DEPLOY_STREAMLIT_CLOUD.md](DEPLOY_STREAMLIT_CLOUD.md) for detailed instructions.
+
+### Option 3: Docker
+
+```bash
+# Build and run
+docker-compose up
+
+# Or manually
+docker build -t leaselooker .
+docker run -p 8501:8501 -e OPENAI_API_KEY='your-key' leaselooker
+```
+
+## 📦 Features
+
+- ✅ **Hybrid RAG** - Combines FAISS semantic search (70%) + BM25 keyword search (30%)
+- ✅ **Smart Chunking** - Intelligent text splitting with context preservation
+- ✅ **Page Citations** - Every answer includes source page numbers
+- ✅ **Simple UI** - Clean, intuitive Streamlit interface
+- ✅ **No Storage** - Files processed in memory, not saved
+- ✅ **Fast** - 2-5 seconds to process typical lease, 1-3 seconds per query
+
+## 💡 Usage
+
+1. **Enter your OpenAI API key** (in sidebar)
+2. **Upload a lease PDF** (drag & drop)
+3. **Click "Process Lease"**
+4. **Ask questions!**
+
+The system will:
+- Find relevant sections in your lease
+- Generate clear answers
+- Show you exactly where it found the information
+
+## 🧪 Example
+
+```bash
+# Test the RAG system directly
+python debug_query.py ./data/Lease2.pdf "How much is the rent?"
+```
+
+Output:
+```
+Answer: The rent is TWENTY-TWO THOUSAND PESOS (PhP22,000.00) per month. (Page 4)
+
+Sources (5 found):
+[Source 1] Page 1: The next monthly payment for the house rental...
+```
 
 ## 📁 Project Structure
 
 ```
 LeaseLooker/
-├── app.py                  # Streamlit web interface
-├── lease_rag.py           # Core RAG system
-├── requirements.txt       # Python dependencies
-├── README.md             # This file
-└── .gitignore           # Git ignore rules
+├── app_simple.py          # Main Streamlit app (recommended)
+├── app.py                 # Advanced UI version
+├── lease_rag.py          # Core hybrid RAG system
+├── config.py             # Configuration settings
+├── requirements.txt      # Python dependencies
+├── Dockerfile            # Docker container
+├── docker-compose.yml    # Docker setup
+│
+├── tests/
+│   ├── test_rag.py       # Automated tests
+│   ├── debug_query.py    # Debug utility
+│   └── test_components.py # Component tests
+│
+└── docs/
+    ├── QUICKSTART.md
+    ├── TROUBLESHOOTING.md
+    ├── DEPLOYMENT.md
+    └── DEPLOY_STREAMLIT_CLOUD.md
 ```
+
+## 🔧 Configuration
+
+Edit `config.py` to customize:
+
+```python
+# Adjust chunk size
+CHUNK_SIZE = 250  # Characters per chunk
+
+# Change retrieval weights
+BM25_WEIGHT = 0.3  # Keyword search (30%)
+FAISS_WEIGHT = 0.7 # Semantic search (70%)
+
+# Use different model
+MODEL_NAME = "gpt-4"  # More powerful but slower/expensive
+```
+
+## 🛠️ Tech Stack
+
+- **Frontend:** Streamlit
+- **RAG Framework:** LangChain (with langchain_classic)
+- **Vector Store:** FAISS
+- **Keyword Search:** BM25 (rank-bm25)
+- **LLM:** OpenAI GPT-3.5-Turbo
+- **PDF Processing:** PyPDF
+
+## 💰 Cost Estimate
+
+Based on OpenAI pricing:
+- Processing a 20-page lease: ~$0.05
+- Each question: ~$0.01
+- **Typical session: $0.10-0.25**
+
+Very affordable! Users can enter their own API keys.
 
 ## 🐛 Troubleshooting
 
-### "OPENAI_API_KEY not set"
-- Make sure you've entered your API key in the sidebar
-- Check that the key is valid at platform.openai.com
-
-### "Failed to load PDF"
-- Ensure PDF is not password-protected
-- Check file isn't corrupted
-- Try a different PDF viewer to verify
-
-### "Out of memory"
-- Reduce chunk_size parameter
-- Process smaller PDFs
-- Close other applications
-
-### BM25 Installation Issues
+### "ModuleNotFoundError: langchain_classic"
 ```bash
-pip install rank_bm25 --upgrade
+pip install langchain_classic
 ```
 
-## 🚦 Performance
+### "Error processing lease"
+Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for solutions.
 
-- **Processing**: ~2-5 seconds for typical lease (10-30 pages)
-- **Query Time**: ~1-3 seconds per question
-- **Memory**: ~200-500 MB depending on PDF size
+### Run diagnostics
+```bash
+python test_components.py
+```
+
+## 📚 Documentation
+
+- **[QUICKSTART.md](QUICKSTART.md)** - Get started in 5 minutes
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues & solutions
+- **[DEPLOY_STREAMLIT_CLOUD.md](DEPLOY_STREAMLIT_CLOUD.md)** - Free cloud deployment
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - AWS, Docker, and other options
 
 ## 🤝 Contributing
 
 Contributions welcome! Please:
-1. Fork the repository
+1. Fork the repo
 2. Create a feature branch
 3. Make your changes
 4. Submit a pull request
 
 ## 📄 License
 
-MIT License - feel free to use for personal or commercial projects
+MIT License - see LICENSE file for details
 
 ## 🙏 Acknowledgments
 
-- Built with [LangChain](https://langchain.com/)
-- Vector search powered by [FAISS](https://github.com/facebookresearch/faiss)
-- Keyword search using [BM25](https://en.wikipedia.org/wiki/Okapi_BM25)
-- UI built with [Streamlit](https://streamlit.io/)
+Built with:
+- [LangChain](https://langchain.com/) - RAG framework
+- [FAISS](https://github.com/facebookresearch/faiss) - Vector similarity search
+- [Streamlit](https://streamlit.io/) - Web interface
+- [OpenAI](https://openai.com/) - Language models
 
-## 📞 Support
+## 🔗 Links
 
-For issues or questions:
-- Open an issue on GitHub
-- Check existing issues for solutions
+- **Live Demo:** (Deploy to get your link!)
+- **Report Issues:** [GitHub Issues](https://github.com/ashwin-aggarwal/LeaseLooker/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/ashwin-aggarwal/LeaseLooker/discussions)
+
+---
+
+**Made with ❤️ for renters everywhere**
+
+Star ⭐ this repo if you find it helpful!
